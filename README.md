@@ -99,7 +99,7 @@ Chaque brique de ce projet a été réellement exécutée, pas seulement écrite
 - **Docker Compose** : stack complète (app + Prometheus + Grafana) démarrée ensemble ; cible Prometheus confirmée `UP` ; dashboard Grafana créé avec un graphique sur des métriques réelles (`rate(http_requests_total[1m])`).
 - **Kubernetes** (cluster local via `kind`) : déploiement à 2 réplicas, les deux passés à `1/1 Running`, accès à l'app confirmé à travers le `Service` Kubernetes (`kubectl port-forward`).
 
-Deux bugs réels ont été trouvés et corrigés au cours de ces tests (pas seulement de la théorie) :
+Deux bugs réels ont été trouvés et corrigés au cours de ces tests :
 
 1. **Permissions du conteneur** — l'utilisateur non-root (`appuser`) n'avait pas les droits d'écriture sur `/app`, donc SQLite ne pouvait pas créer son fichier de base au démarrage (`unable to open database file`). Corrigé en ajoutant `RUN chown -R appuser:appuser /app` dans le `Dockerfile`, avant de basculer sur l'utilisateur non-root.
 2. **Image inexistante en local** — `k8s/deployment.yaml` référençait `ghcr.io/.../cloud-devops-project:latest`, une image qui n'existe que sur le registre distant (une fois la CI/CD exécutée). En local, Kubernetes essayait de la télécharger et échouait (`ErrImagePull`, 403 Forbidden). Corrigé en pointant vers l'image chargée localement (`image: url-shortener:local`) avec `imagePullPolicy: Never`, pour forcer Kubernetes à utiliser uniquement l'image présente sur le nœud.
